@@ -1,0 +1,14 @@
+CREATE DATABASE Smash ; 
+USE Smash;
+
+CREATE TABLE Personaje(
+P_id INT  PRIMARY KEY AUTO_INCREMENT,
+P_nombre VARCHAR(15) NOT NULL ,
+P_tipo VARCHAR(15) NOT NULL ,
+P_vida INT  NOT NULL,
+P_resistencia INT NOT NULL ,
+P_alcanze INT NOT NULL,
+P_habilidad VARCHAR(15) NOT NULL
+);
+
+DROP TABLE Personaje ;
