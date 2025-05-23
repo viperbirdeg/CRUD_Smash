@@ -21,6 +21,15 @@ public class Combatiente extends Personaje{
         return golpe;
     }
     @Override
+    public void setha(String nombre_hab) {
+        this.golpe = nombre_hab;
+    }
+
+    @Override
+    public void setha(int can_mana) {
+        throw new UnsupportedOperationException("Combatiente no usa maná.");
+    }
+    @Override
     public String toString() {
         return "Nombre:"+getNombre()+"\n"+
                 "tipo:"+getTipo()+"\n"+

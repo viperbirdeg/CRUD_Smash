@@ -60,7 +60,8 @@ public abstract class  Personaje {
     }
 
     public abstract String getha();
-
+    public abstract void setha(String nombre_hab);
+    public abstract void setha(int can_mana);
     @Override
     public String toString() {
         return  "nombre:" + nombre + "\n" +

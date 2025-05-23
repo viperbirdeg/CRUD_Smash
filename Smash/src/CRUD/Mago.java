@@ -21,6 +21,15 @@ public class Mago extends Personaje {
         return mana;
     }
     @Override
+    public void setha(int can_mana) {
+        this.mana = String.valueOf(can_mana);
+    }
+
+    @Override
+    public void setha(String nombre_hab) {
+        throw new UnsupportedOperationException("Mago no usa habilidad con nombre.");
+    }
+    @Override
     public String toString() {
         return "Nombre:"+getNombre()+"\n"+
                 "tipo:"+getTipo()+"\n"+

@@ -20,6 +20,14 @@ public class Mixto extends Personaje {
     public String getha(){
         return haki;
     }
+    @Override
+    public void setha(String nombre_hab) {
+        this.haki = nombre_hab;
+    }
+    @Override
+    public void setha(int can_mana) {
+        throw new UnsupportedOperationException("Mixto no usa maná.");
+    }
 
     @Override
     public String toString() {

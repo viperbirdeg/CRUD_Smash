@@ -21,10 +21,11 @@ public class Swing extends JFrame {
     static String golpe_b, haki_b, mana_b;
     static int opcion = 0;
     static JPanel panel, panel_tabla;
-    static JButton cerrar_tabla,eliminar_button,insercion_bd;
+    static JButton cerrar_tabla,eliminar_button,insercion_bd,configuraciones_avanzadas,editar_list_preeliminar;
     static DefaultTableModel modelo;
     static JScrollPane scroll;
     static int indice_Fila_Seleccionada=0;
+    static boolean fila_seleccionada = true ;
 
     //declaramos 3 variables static para usar como parametros en la conexion
     public static final String URL ="jdbc:mysql://localhost:3306/Smash?autoReconnect=true&useSSL=false";
@@ -221,9 +222,15 @@ public class Swing extends JFrame {
 
             B_cerrar_tabla();
             Eliminar_elemento_preeliminar();
+            B_insertar_bd();
+            Configuracion_avanzada();
+            Editar_lista_preeliminar();
             panel_tabla.add(scroll);
             panel_tabla.add(cerrar_tabla);
             panel_tabla.add(eliminar_button);
+            panel_tabla.add(insercion_bd);
+            panel_tabla.add(configuraciones_avanzadas);
+            panel_tabla.add(editar_list_preeliminar);
         }
 
         actualizarTabla();
@@ -236,7 +243,7 @@ public class Swing extends JFrame {
 
     public void B_cerrar_tabla(){
         cerrar_tabla = new JButton("Cerrar tabla");
-        cerrar_tabla.setBounds(100, 300, 200, 70);
+        cerrar_tabla.setBounds(100, 300, 120, 70);
         cerrar_tabla.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -248,18 +255,36 @@ public class Swing extends JFrame {
 
     public void B_insertar_bd(){
         insercion_bd = new JButton("Insertar al listado general");
-        insercion_bd.setBounds(250, 300, 200, 70);
+        insercion_bd.setBounds(250, 400, 180, 70);
         insercion_bd.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(!personajes.isEmpty()){
+                    insertar_array();
+                }else {
+                    JOptionPane.showMessageDialog(null,"No hay registros preeliminares");
+                }
+            }
+        });
+    }
+
+    public void Configuracion_avanzada(){
+        ImageIcon image = new ImageIcon("Configuracion.png");
+        configuraciones_avanzadas = new JButton();
+        configuraciones_avanzadas.setBounds(100, 400, 70, 70);
+        configuraciones_avanzadas.setIcon(new ImageIcon(image.getImage().getScaledInstance(70,70,Image.SCALE_SMOOTH)));
+
+        configuraciones_avanzadas.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
             }
         });
     }
-    
+
     public void Eliminar_elemento_preeliminar(){
-        eliminar_button = new JButton("Eliminar jugador preeliminar");
-        eliminar_button.setBounds(335, 300, 245, 70);
+        eliminar_button = new JButton("Eliminar jugador");
+        eliminar_button.setBounds(430, 300, 150, 70);
 
             eliminar_button.addActionListener(new ActionListener() {
                 @Override
@@ -274,6 +299,83 @@ public class Swing extends JFrame {
                 }
             }
             );
+
+    }
+
+    public void Editar_lista_preeliminar(){
+        editar_list_preeliminar = new JButton("Editar personaje");
+        editar_list_preeliminar.setBounds(260, 300, 145, 70);
+
+        editar_list_preeliminar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String nombre_mod ="", habilidad_mod ="";
+                int vida_mod = 0,resistencia_mod = 0, alcanze_mod=0;
+
+                String opcion_mod = "";
+                String opcion_validada = "";
+
+                seleccionar_elemento_tabla();
+                if (!personajes.isEmpty() && !fila_seleccionada) {
+                    boolean salir = false;
+                    do {
+                        opcion_mod = JOptionPane.showInputDialog("¿Que deseas modificar?"+"\n"+"Nombre"+"\n"+"Vida"+"\n"+"Resistencia"+"\n"+"Alcanze"+"\n"+"Habilidad"+"\n"+"Salir");
+                        opcion_validada = opcion_mod.toLowerCase();
+
+                        switch (opcion_validada) {
+                            case "nombre":
+                                //validad no genera problema
+                                nombre_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre:");
+                                personajes.get(indice_Fila_Seleccionada).setNombre(nombre_mod);
+                                JOptionPane.showMessageDialog(null,"Se modifico con exito tu nuevo nombre es : "+nombre_mod);
+                                break;
+                            case "vida":
+                                //validado
+                                vida_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa la nueva vida:"));
+                                personajes.get(indice_Fila_Seleccionada).setVida(vida_mod);
+                                JOptionPane.showMessageDialog(null,"Se modifico con exito tu nueva vida es : "+vida_mod);
+                                break;
+                            case "resistencia":
+                                resistencia_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa la nueva resistencia:"));
+                                personajes.get(indice_Fila_Seleccionada).setResistencia(resistencia_mod);
+                                JOptionPane.showMessageDialog(null,"Se modifico con exito tu nueva resistencia es : "+resistencia_mod);
+                                break;
+                            case "alcanze":
+                                alcanze_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa el nuevo alcanze:"));
+                                personajes.get(indice_Fila_Seleccionada).setAlcanze(alcanze_mod);
+                                JOptionPane.showMessageDialog(null,"Se modifico con exito tu nuevo alcanze es : "+alcanze_mod);
+                                break;
+                            case "habilidad":
+                                habilidad_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre de tu habilidad (En el caso del mago anota su cantidad de mana):");
+
+                                if(personajes.get(indice_Fila_Seleccionada).getTipo().equals("Combatiente")||personajes.get(indice_Fila_Seleccionada).getTipo().equals("Mixto")){
+                                    personajes.get(indice_Fila_Seleccionada).setha(habilidad_mod);
+                                }else {
+                                    personajes.get(indice_Fila_Seleccionada).setha(Integer.parseInt(habilidad_mod));
+                                }
+                                JOptionPane.showMessageDialog(null,"Se modifico con exito tu nueva habilidad  o cantidad de mana es : "+habilidad_mod);
+                                break;
+                            case "salir":
+                                break;
+                            default:
+                                JOptionPane.showMessageDialog(null, "Esa no es una opción valida para modificar o para salir del menu ");
+                        }
+                        if (opcion_validada.equals("salir")) {
+                            salir = true;
+                        }
+                    } while (!salir);
+                }else if(personajes.isEmpty()){
+                    JOptionPane.showMessageDialog(null, "No hay elementos parar editar");
+                }else{
+                    JOptionPane.showMessageDialog(null, "No seleccionaste ningun elemento");
+
+                }
+                actualizarTabla();
+
+            }
+
+        }
+        );
 
     }
 
@@ -303,7 +405,9 @@ public class Swing extends JFrame {
                 //Obtener el número de filas seleccionadas
                 if (tabla_preeliminar.getSelectedRowCount() == 1) {
                     indice_Fila_Seleccionada = tabla_preeliminar.getSelectedRow();
-                    System.out.println("Fila seleccionada: " + indice_Fila_Seleccionada);
+                    fila_seleccionada = false;
+                }else{
+                    fila_seleccionada = true ;
                 }
             }
 
@@ -331,16 +435,22 @@ public class Swing extends JFrame {
             int resultado = 0;
             for(int i = 0;i<personajes.size();i++){
                 Personaje p = personajes.get(i);
-                ps.setString(i,p.getNombre());
-                ps.setString(i,p.getTipo());
-                ps.setInt(i,p.getVida());
-                ps.setInt(i,p.getResistencia());
-                ps.setInt(i,p.getAlcanze());
-                ps.setString(i,p.getha());
+                ps.setString(1,p.getNombre());
+                ps.setString(2,p.getTipo());
+                ps.setInt(3,p.getVida());
+                ps.setInt(4,p.getResistencia());
+                ps.setInt(5,p.getAlcanze());
+                ps.setString(6,p.getha());
                 resultado = ps.executeUpdate();
             }
             if(resultado>0){
                 JOptionPane.showMessageDialog(null,"Insercion de nuevos registros exitosos");
+                //tengo que reiniciar el Jtable
+                modelo.setRowCount(0);
+                //tengo que actualizar el array list
+                personajes.removeAll(personajes);
+                System.out.println("asegurarnos de que la lista se reinicio:"+personajes.size());
+
             }else{
                 JOptionPane.showMessageDialog(null,"No se inserto correctamente");
             }
@@ -350,6 +460,10 @@ public class Swing extends JFrame {
         }
     }
 
+    //ver listado general
+    //eliminador elemento del listado general
+    //buscar elemento del listado general
+    //buscar elemento de lista preeliminar
     public static void main(String[] args) {
         new Swing();
 
