@@ -21,16 +21,19 @@ public class Swing extends JFrame {
     JScrollPane scroll;
     JButton cerrar_tabla, eliminar_button, insercion_bd, configuraciones_avanzadas, editar_list_preeliminar;
 
+
     String golpe_b, haki_b, mana_b;
     int opcion = 0;
 
     int indice_Fila_Seleccionada = 0;
     boolean fila_seleccionada = true;
+    boolean fila_seleccionada_general = true;
 
     //declaramos 3 variables static para usar como parametros en la conexion
     public static final String URL = "jdbc:mysql://localhost:3306/Smash?autoReconnect=true&useSSL=false";
     public static final String usuario = "root";
     public static final String pass = "Readingsteiner9";
+    Connection cx ;
     static PreparedStatement ps;
     static ResultSet rs;
 
@@ -491,6 +494,7 @@ public class Swing extends JFrame {
             scroll.setBounds(105, 1, 470, 300);
 
             //metodo para activar los botones
+            seleccionar_elemento_tabla_general();
             J_button_panel_general();
 
             /*B_cerrar_tabla();
@@ -512,11 +516,25 @@ public class Swing extends JFrame {
     }
     //ver listado general
 
-
+    public void seleccionar_elemento_tabla_general() {
+        tabla_general.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (tabla_general.getSelectedRowCount() == 1) {
+                    indice_Fila_Seleccionada = tabla_general.getSelectedRow();
+                    fila_seleccionada_general = false;
+                } else {
+                    fila_seleccionada_general = true;
+                }
+            }
+        });
+    }
     public void J_button_panel_general() {
+        //Boton para editar a un jugador desde la bd
         JButton editar_jugador_general = new JButton("Editar jugador");
         editar_jugador_general.setBounds(103, 300, 200, 70);
         panel_listado_general.add(editar_jugador_general);
+
         editar_jugador_general.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -525,9 +543,7 @@ public class Swing extends JFrame {
 
                 String opcion_mod = "";
                 String opcion_validada = "";
-
-                seleccionar_elemento_tabla();
-                if (!fila_seleccionada) {
+                if (!fila_seleccionada_general) {
                     boolean salir = false;
                     do {
                         opcion_mod = JOptionPane.showInputDialog("¿Que deseas modificar?" + "\n" + "Nombre" + "\n" + "Vida" + "\n" + "Resistencia" + "\n" + "Alcanze" + "\n" + "Habilidad" + "\n" + "Salir");
@@ -575,20 +591,20 @@ public class Swing extends JFrame {
                             salir = true;
                         }
                     } while (!salir);
-                } else if (personajes.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "No hay elementos parar editar");
+                    modelo.setRowCount(0);
+                    listado_general();
                 } else {
                     JOptionPane.showMessageDialog(null, "No seleccionaste ningun elemento");
-
                 }
-                modelo.setRowCount(0);
-                listado_general();
+
             }
         });
 
+        //boton para ver el listado general
         JButton visualizar_lista_general = new JButton("Ver lista general");
         visualizar_lista_general.setBounds(378, 300, 200, 70);
         panel_listado_general.add(visualizar_lista_general);
+
         visualizar_lista_general.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -596,21 +612,61 @@ public class Swing extends JFrame {
                 listado_general();
             }
         });
+
+        //boton para buscar a un jugador
         JButton buscar_jugador_general = new JButton("buscar jugador");
         buscar_jugador_general.setBounds(103, 400, 200, 70);
         panel_listado_general.add(buscar_jugador_general);
+
         buscar_jugador_general.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
             }
         });
+        //boton para eliminar a un jugador
         JButton eliminar_jugador_general = new JButton("Eliminar jugador");
         eliminar_jugador_general.setBounds(378, 400, 200, 70);
         panel_listado_general.add(eliminar_jugador_general);
         eliminar_jugador_general.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
+                cx = null;
+
+                if (!fila_seleccionada_general) {
+
+                    try {
+                        String consulta = "DELETE FROM Personaje WHERE P_id=?";
+                        cx =getConection();
+                        ps = cx.prepareStatement(consulta);
+
+                        ps.setString(1, String.valueOf(tabla_general.getValueAt(indice_Fila_Seleccionada, 0)));
+
+                        if(ps.executeUpdate()>0){
+                            JOptionPane.showMessageDialog(null, "El registro ha sido eliminado exitosamente operación Exitosa");
+                            modelo.setRowCount(0);
+                            listado_general();
+                        }else{
+
+                            JOptionPane.showMessageDialog(null, "No se ha podido eliminar el registro\n"
+                                            + "Inténtelo nuevamente.", "Error en la operación",
+                                    JOptionPane.ERROR_MESSAGE);
+
+                        }
+                    }catch (Exception eliminar) {
+                        System.err.println(eliminar);
+
+                    } finally {
+                        try {
+                            if (rs != null) rs.close();
+                            if (ps != null) ps.close();
+                            if (cx != null) cx.close();
+                        } catch (SQLException exception) {
+                            System.out.println(exception);
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "No seleccionaste ningun elemento");
+                }
 
             }
         });
@@ -619,7 +675,7 @@ public class Swing extends JFrame {
 
     public void listado_general() {
         String[] registros = new String[7];
-        Connection cx = null;
+        cx = null;
         String consulta = "SELECT * FROM Personaje ";
         try {
             cx = getConection();
@@ -645,8 +701,8 @@ public class Swing extends JFrame {
                 registros[6] = rs.getString("P_Habilidad");
                 modelo.addRow(registros);
             }
-        } catch (Exception e) {
-            System.out.println(e);
+        } catch (Exception exception) {
+            System.err.println(exception);
             System.out.println("error en pasar datos tonto ");
         } finally {
             try {
