@@ -217,7 +217,35 @@ public class Swing extends JFrame {
 
     }
 
-    public void J_button_panel_preeliminar() {
+    public void Agregar_personajes_preeliminares(int opcion) {
+        String nombre = I_nombre.getText();
+        String s_vida = I_vida.getText();
+        String tipo = I_tipo.getSelectedItem().toString();
+        String s_resistencia = I_resistencia.getText();
+        String s_alcanze = I_alcanze.getText();
+
+        if (!nombre.isEmpty() && !s_vida.isEmpty() && !tipo.isEmpty() && !s_resistencia.isEmpty() && !s_alcanze.isEmpty()) {
+
+            int vida = Integer.parseInt(I_vida.getText());
+            int resistencia = Integer.parseInt(I_resistencia.getText());
+            int alcanze = Integer.parseInt(I_alcanze.getText());
+            switch (opcion) {
+                case 1:
+                    personajes.add(new Combatiente(nombre, tipo, vida, resistencia, alcanze, golpe_b));
+                    break;
+                case 2:
+                    personajes.add(new Mago(nombre, tipo, vida, resistencia, alcanze, mana_b));
+                    break;
+                case 3:
+                    personajes.add(new Mixto(nombre, tipo, vida, resistencia, alcanze, haki_b));
+            }
+            JOptionPane.showMessageDialog(null, "Nombre:" + nombre + "\n" + "Vida:" + vida + "\n" + "Tipo:" + tipo + "\n" + "Resistencia:" + resistencia + "\n" + "Alcanze:" + alcanze);
+        } else {
+            JOptionPane.showMessageDialog(null, "Rellena todos los campos ");
+        }
+    }
+
+    public void Editar_lista_preeliminar() {
         editar_list_preeliminar = new JButton("Editar personaje");
         editar_list_preeliminar.setBounds(260, 300, 145, 70);
 
@@ -290,39 +318,6 @@ public class Swing extends JFrame {
             }
 
         });
-    }
-
-    public void Agregar_personajes_preeliminares(int opcion) {
-        String nombre = I_nombre.getText();
-        String s_vida = I_vida.getText();
-        String tipo = I_tipo.getSelectedItem().toString();
-        String s_resistencia = I_resistencia.getText();
-        String s_alcanze = I_alcanze.getText();
-
-        if (!nombre.isEmpty() && !s_vida.isEmpty() && !tipo.isEmpty() && !s_resistencia.isEmpty() && !s_alcanze.isEmpty()) {
-
-            int vida = Integer.parseInt(I_vida.getText());
-            int resistencia = Integer.parseInt(I_resistencia.getText());
-            int alcanze = Integer.parseInt(I_alcanze.getText());
-            switch (opcion) {
-                case 1:
-                    personajes.add(new Combatiente(nombre, tipo, vida, resistencia, alcanze, golpe_b));
-                    break;
-                case 2:
-                    personajes.add(new Mago(nombre, tipo, vida, resistencia, alcanze, mana_b));
-                    break;
-                case 3:
-                    personajes.add(new Mixto(nombre, tipo, vida, resistencia, alcanze, haki_b));
-            }
-            JOptionPane.showMessageDialog(null, "Nombre:" + nombre + "\n" + "Vida:" + vida + "\n" + "Tipo:" + tipo + "\n" + "Resistencia:" + resistencia + "\n" + "Alcanze:" + alcanze);
-        } else {
-            JOptionPane.showMessageDialog(null, "Rellena todos los campos ");
-        }
-    }
-
-    public void Editar_lista_preeliminar() {
-
-
     }
 
     public void B_cerrar_tabla() {
@@ -520,36 +515,89 @@ public class Swing extends JFrame {
 
     public void J_button_panel_general() {
         JButton editar_jugador_general = new JButton("Editar jugador");
-        editar_jugador_general.setBounds(170, 400, 200, 70);
+        editar_jugador_general.setBounds(103, 300, 200, 70);
         panel_listado_general.add(editar_jugador_general);
         editar_jugador_general.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                String nombre_mod = "", habilidad_mod = "";
+                int vida_mod = 0, resistencia_mod = 0, alcanze_mod = 0;
 
+                String opcion_mod = "";
+                String opcion_validada = "";
+
+                seleccionar_elemento_tabla();
+                if (!fila_seleccionada) {
+                    boolean salir = false;
+                    do {
+                        opcion_mod = JOptionPane.showInputDialog("¿Que deseas modificar?" + "\n" + "Nombre" + "\n" + "Vida" + "\n" + "Resistencia" + "\n" + "Alcanze" + "\n" + "Habilidad" + "\n" + "Salir");
+                        opcion_validada = opcion_mod.toLowerCase();
+
+                        switch (opcion_validada) {
+                            case "nombre":
+                                //validad no genera problema
+                                nombre_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre:");
+                                personajes.get(indice_Fila_Seleccionada).setNombre(nombre_mod);
+                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nuevo nombre es : " + nombre_mod);
+                                break;
+                            case "vida":
+                                //validado
+                                vida_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa la nueva vida:"));
+                                personajes.get(indice_Fila_Seleccionada).setVida(vida_mod);
+                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nueva vida es : " + vida_mod);
+                                break;
+                            case "resistencia":
+                                resistencia_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa la nueva resistencia:"));
+                                personajes.get(indice_Fila_Seleccionada).setResistencia(resistencia_mod);
+                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nueva resistencia es : " + resistencia_mod);
+                                break;
+                            case "alcanze":
+                                alcanze_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa el nuevo alcanze:"));
+                                personajes.get(indice_Fila_Seleccionada).setAlcanze(alcanze_mod);
+                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nuevo alcanze es : " + alcanze_mod);
+                                break;
+                            case "habilidad":
+                                habilidad_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre de tu habilidad (En el caso del mago anota su cantidad de mana):");
+
+                                if (personajes.get(indice_Fila_Seleccionada).getTipo().equals("Combatiente") || personajes.get(indice_Fila_Seleccionada).getTipo().equals("Mixto")) {
+                                    personajes.get(indice_Fila_Seleccionada).setha(habilidad_mod);
+                                } else {
+                                    personajes.get(indice_Fila_Seleccionada).setha(Integer.parseInt(habilidad_mod));
+                                }
+                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nueva habilidad  o cantidad de mana es : " + habilidad_mod);
+                                break;
+                            case "salir":
+                                break;
+                            default:
+                                JOptionPane.showMessageDialog(null, "Esa no es una opción valida para modificar o para salir del menu ");
+                        }
+                        if (opcion_validada.equals("salir")) {
+                            salir = true;
+                        }
+                    } while (!salir);
+                } else if (personajes.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "No hay elementos parar editar");
+                } else {
+                    JOptionPane.showMessageDialog(null, "No seleccionaste ningun elemento");
+
+                }
+                modelo.setRowCount(0);
+                listado_general();
             }
         });
 
         JButton visualizar_lista_general = new JButton("Ver lista general");
-        visualizar_lista_general.setBounds(370, 400, 200, 70);
+        visualizar_lista_general.setBounds(378, 300, 200, 70);
         panel_listado_general.add(visualizar_lista_general);
         visualizar_lista_general.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-            }
-        });
-
-        JButton eliminar_jugador_general = new JButton("Eliminar jugador");
-        eliminar_jugador_general.setBounds(370, 400, 200, 70);
-        panel_listado_general.add(eliminar_jugador_general);
-        eliminar_jugador_general.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
+                modelo.setRowCount(0);
+                listado_general();
             }
         });
         JButton buscar_jugador_general = new JButton("buscar jugador");
-        buscar_jugador_general.setBounds(370, 400, 200, 70);
+        buscar_jugador_general.setBounds(103, 400, 200, 70);
         panel_listado_general.add(buscar_jugador_general);
         buscar_jugador_general.addActionListener(new ActionListener() {
             @Override
@@ -557,6 +605,16 @@ public class Swing extends JFrame {
 
             }
         });
+        JButton eliminar_jugador_general = new JButton("Eliminar jugador");
+        eliminar_jugador_general.setBounds(378, 400, 200, 70);
+        panel_listado_general.add(eliminar_jugador_general);
+        eliminar_jugador_general.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+
     }
 
     public void listado_general() {
