@@ -11,4 +11,11 @@ P_alcanze INT NOT NULL,
 P_habilidad VARCHAR(15) NOT NULL
 );
 
+DESCRIBE  TABLE Personaje;
 DROP TABLE Personaje ;
+SELECT * FROM Personaje ;
+INSERT INTO Personaje (
+    P_nombre, P_tipo, P_vida, P_resistencia, P_alcanze, P_habilidad
+) VALUES (
+    'Ezio', 'Mago', 100, 50, 30, 'Invisibilidad'
+);

@@ -514,7 +514,6 @@ public class Swing extends JFrame {
         panel.setVisible(false);
 
     }
-    //ver listado general
 
     public void seleccionar_elemento_tabla_general() {
         tabla_general.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -529,6 +528,7 @@ public class Swing extends JFrame {
             }
         });
     }
+
     public void J_button_panel_general() {
         //Boton para editar a un jugador desde la bd
         JButton editar_jugador_general = new JButton("Editar jugador");
@@ -538,64 +538,133 @@ public class Swing extends JFrame {
         editar_jugador_general.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String nombre_mod = "", habilidad_mod = "";
-                int vida_mod = 0, resistencia_mod = 0, alcanze_mod = 0;
+                String nombre_mod, habilidad_mod;
+                String  vida_mod,  resistencia_mod , alcanze_mod;
 
-                String opcion_mod = "";
-                String opcion_validada = "";
-                if (!fila_seleccionada_general) {
-                    boolean salir = false;
-                    do {
-                        opcion_mod = JOptionPane.showInputDialog("¿Que deseas modificar?" + "\n" + "Nombre" + "\n" + "Vida" + "\n" + "Resistencia" + "\n" + "Alcanze" + "\n" + "Habilidad" + "\n" + "Salir");
-                        opcion_validada = opcion_mod.toLowerCase();
+                String opcion_mod ;
+                String opcion_validada ;
 
-                        switch (opcion_validada) {
-                            case "nombre":
-                                //validad no genera problema
-                                nombre_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre:");
-                                personajes.get(indice_Fila_Seleccionada).setNombre(nombre_mod);
-                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nuevo nombre es : " + nombre_mod);
-                                break;
-                            case "vida":
-                                //validado
-                                vida_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa la nueva vida:"));
-                                personajes.get(indice_Fila_Seleccionada).setVida(vida_mod);
-                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nueva vida es : " + vida_mod);
-                                break;
-                            case "resistencia":
-                                resistencia_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa la nueva resistencia:"));
-                                personajes.get(indice_Fila_Seleccionada).setResistencia(resistencia_mod);
-                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nueva resistencia es : " + resistencia_mod);
-                                break;
-                            case "alcanze":
-                                alcanze_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa el nuevo alcanze:"));
-                                personajes.get(indice_Fila_Seleccionada).setAlcanze(alcanze_mod);
-                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nuevo alcanze es : " + alcanze_mod);
-                                break;
-                            case "habilidad":
-                                habilidad_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre de tu habilidad (En el caso del mago anota su cantidad de mana):");
 
-                                if (personajes.get(indice_Fila_Seleccionada).getTipo().equals("Combatiente") || personajes.get(indice_Fila_Seleccionada).getTipo().equals("Mixto")) {
-                                    personajes.get(indice_Fila_Seleccionada).setha(habilidad_mod);
-                                } else {
-                                    personajes.get(indice_Fila_Seleccionada).setha(Integer.parseInt(habilidad_mod));
-                                }
-                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nueva habilidad  o cantidad de mana es : " + habilidad_mod);
-                                break;
-                            case "salir":
-                                break;
-                            default:
-                                JOptionPane.showMessageDialog(null, "Esa no es una opción valida para modificar o para salir del menu ");
-                        }
-                        if (opcion_validada.equals("salir")) {
-                            salir = true;
-                        }
-                    } while (!salir);
-                    modelo.setRowCount(0);
-                    listado_general();
-                } else {
-                    JOptionPane.showMessageDialog(null, "No seleccionaste ningun elemento");
+                try {
+                    Connection cx = null ;
+                    String consulta_busqueda = "";
+                    cx = getConection();
+
+                    if (!fila_seleccionada_general) {
+                        boolean salir = false;
+                        do {
+                            opcion_mod = JOptionPane.showInputDialog("¿Que deseas modificar?" + "\n" + "Nombre" + "\n" + "Vida" + "\n" + "Resistencia" + "\n" + "Alcanze" + "\n" + "Habilidad" + "\n" + "Salir");
+                            opcion_validada = opcion_mod.toLowerCase();
+
+                            switch (opcion_validada) {
+                                case "nombre":
+                                    nombre_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre:");
+
+                                    //Aqui falta la logica
+                                    consulta_busqueda ="UPDATE Personaje SET P_nombre = ? WHERE P_id = ?";
+                                    ps = cx.prepareStatement(consulta_busqueda);
+                                    ps.setString(1,nombre_mod);
+                                    ps.setString(2, String.valueOf(tabla_general.getValueAt(indice_Fila_Seleccionada, 0)));
+
+                                    if(ps.executeUpdate()>0){
+                                        JOptionPane.showMessageDialog(null, "Se modifico con exito tu nuevo nombre es : " + nombre_mod);
+                                        modelo.setRowCount(0);
+                                        listado_general();
+                                    }else{
+                                        JOptionPane.showMessageDialog(null, "No se ha podido actualizar  el nombre\n"
+                                                        + JOptionPane.ERROR_MESSAGE);
+                                    }
+
+                                    break;
+                                case "vida":
+                                    //validado
+                                    vida_mod =JOptionPane.showInputDialog("Ingresa la nueva vida:");
+                                    ///Aqui falta la logica
+                                    consulta_busqueda ="UPDATE Personaje SET P_vida = ? WHERE P_id = ?";
+                                    ps = cx.prepareStatement(consulta_busqueda);
+                                    ps.setString(1,vida_mod);
+                                    ps.setString(2, String.valueOf(tabla_general.getValueAt(indice_Fila_Seleccionada, 0)));
+
+                                    if(ps.executeUpdate()>0){
+                                        JOptionPane.showMessageDialog(null, "Se modifico con exito, tu vida es : " + vida_mod);
+                                        modelo.setRowCount(0);
+                                        listado_general();
+                                    }else{
+                                        JOptionPane.showMessageDialog(null, "No se ha podido actualizar  la vida\n"
+                                                + JOptionPane.ERROR_MESSAGE);
+                                    }
+                                    break;
+                                case "resistencia":
+                                    resistencia_mod = JOptionPane.showInputDialog("Ingresa la nueva resistencia:");
+                                    ///Aqui falta la logica
+                                    consulta_busqueda ="UPDATE Personaje SET P_resistencia = ? WHERE P_id = ?";
+                                    ps = cx.prepareStatement(consulta_busqueda);
+                                    ps.setString(1,resistencia_mod);
+                                    ps.setString(2, String.valueOf(tabla_general.getValueAt(indice_Fila_Seleccionada, 0)));
+
+                                    if(ps.executeUpdate()>0){
+                                        JOptionPane.showMessageDialog(null, "Se modifico con exito, tu resistencia es : " + resistencia_mod);
+                                        modelo.setRowCount(0);
+                                        listado_general();
+                                    }else{
+                                        JOptionPane.showMessageDialog(null, "No se ha podido actualizar  la resistencia \n"
+                                                + JOptionPane.ERROR_MESSAGE);
+                                    }
+                                    break;
+                                case "alcanze":
+                                    alcanze_mod = JOptionPane.showInputDialog("Ingresa el nuevo alcanze:");
+                                    ///Aqui falta la logica
+                                    consulta_busqueda ="UPDATE Personaje SET P_alcanze = ? WHERE P_id = ?";
+                                    ps = cx.prepareStatement(consulta_busqueda);
+                                    ps.setString(1,alcanze_mod);
+                                    ps.setString(2, String.valueOf(tabla_general.getValueAt(indice_Fila_Seleccionada, 0)));
+
+                                    if(ps.executeUpdate()>0){
+                                        JOptionPane.showMessageDialog(null, "Se modifico con exito, tu alcanze es : " + alcanze_mod);
+                                        modelo.setRowCount(0);
+                                        listado_general();
+                                    }else{
+                                        JOptionPane.showMessageDialog(null, "No se ha podido actualizar  el alcanze\n"
+                                                + JOptionPane.ERROR_MESSAGE);
+                                    }
+                                    break;
+                                case "habilidad":
+                                    habilidad_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre de tu habilidad \n(En el caso del mago anota su cantidad de mana):");
+
+                                    ///Aqui falta la logica
+                                    consulta_busqueda ="UPDATE Personaje SET P_habilidad = ? WHERE P_id = ?";
+                                    ps = cx.prepareStatement(consulta_busqueda);
+                                    ps.setString(1,habilidad_mod);
+                                    ps.setString(2, String.valueOf(tabla_general.getValueAt(indice_Fila_Seleccionada, 0)));
+
+                                    if(ps.executeUpdate()>0){
+                                        JOptionPane.showMessageDialog(null, "Se modifico con exito, tu habilidad es : " + habilidad_mod);
+                                        modelo.setRowCount(0);
+                                        listado_general();
+                                    }else{
+                                        JOptionPane.showMessageDialog(null, "No se ha podido actualizar  tu habilidad\n"
+                                                + JOptionPane.ERROR_MESSAGE);
+                                    }
+                                    break;
+                                case "salir":
+                                    break;
+                                default:
+                                    JOptionPane.showMessageDialog(null, "Esa no es una opción valida para modificar o para salir del menu ");
+                            }
+                            if (opcion_validada.equals("salir")) {
+                                salir = true;
+                            }
+                        } while (!salir);
+                        modelo.setRowCount(0);
+                        listado_general();
+                    } else {
+                        JOptionPane.showMessageDialog(null, "No seleccionaste ningun elemento");
+                    }
+                }catch (Exception busqueda){
+                    System.err.println(busqueda);
                 }
+
+
 
             }
         });
@@ -621,9 +690,48 @@ public class Swing extends JFrame {
         buscar_jugador_general.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                int id = Integer.parseInt(JOptionPane.showInputDialog("Digita el id de tu jugador:"));
+                String[] registros = new String[7];
+                Connection cx = null;
+                PreparedStatement ps = null;
+                ResultSet rs = null;
+                String consulta = "SELECT * FROM Personaje WHERE P_id=?";
 
+                try {
+                    cx = getConection();
+                    ps = cx.prepareStatement(consulta);
+                    ps.setInt(1, id);  // Mejor usar setInt si el campo es numérico
+                    rs = ps.executeQuery();
+
+                    if (rs.next()) {
+                        registros[0] = rs.getString("P_id");
+                        registros[1] = rs.getString("P_nombre");
+                        registros[2] = rs.getString("P_tipo");
+                        registros[3] = rs.getString("P_vida");
+                        registros[4] = rs.getString("P_resistencia");
+                        registros[5] = rs.getString("P_alcanze");
+                        registros[6] = rs.getString("P_Habilidad");
+                        modelo.setRowCount(0);
+                        modelo.addRow(registros);
+                        JOptionPane.showMessageDialog(null, "Usuario encontrado con éxito");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Usuario no encontrado");
+                    }
+
+                } catch (Exception exception) {
+                    System.err.println("Error: " + exception);
+                } finally {
+                    try {
+                        if (rs != null) rs.close();
+                        if (ps != null) ps.close();
+                        if (cx != null) cx.close();
+                    } catch (SQLException error) {
+                        System.out.println(error);
+                    }
+                }
             }
         });
+
         //boton para eliminar a un jugador
         JButton eliminar_jugador_general = new JButton("Eliminar jugador");
         eliminar_jugador_general.setBounds(378, 400, 200, 70);
@@ -715,9 +823,7 @@ public class Swing extends JFrame {
         }
     }
 
-    //eliminador elemento del listado general
     //buscar elemento del listado general
-    //buscar elemento de lista preeliminar
     public static void main(String[] args) {
         new Swing();
 
