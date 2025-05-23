@@ -5,59 +5,58 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.ArrayList;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 
 public class Swing extends JFrame {
-    static ArrayList<Personaje> personajes = new ArrayList<>();
-    static JTextField I_nombre, I_vida, I_resistencia, I_alcanze;
-    static JTable tabla_preeliminar;
-    static JComboBox I_tipo;
-    static String golpe_b, haki_b, mana_b;
-    static int opcion = 0;
-    static JPanel panel, panel_tabla;
-    static JButton cerrar_tabla,eliminar_button,insercion_bd,configuraciones_avanzadas,editar_list_preeliminar;
-    static DefaultTableModel modelo;
-    static JScrollPane scroll;
-    static int indice_Fila_Seleccionada=0;
-    static boolean fila_seleccionada = true ;
+
+    ArrayList<Personaje> personajes = new ArrayList<>();
+    JComboBox I_tipo;
+    JTextField I_nombre, I_vida, I_resistencia, I_alcanze;
+    JPanel panel, panel_tabla, panel_listado_general;
+    JTable tabla_preeliminar, tabla_general;
+    DefaultTableModel modelo;
+    JScrollPane scroll;
+    JButton cerrar_tabla, eliminar_button, insercion_bd, configuraciones_avanzadas, editar_list_preeliminar;
+
+    String golpe_b, haki_b, mana_b;
+    int opcion = 0;
+
+    int indice_Fila_Seleccionada = 0;
+    boolean fila_seleccionada = true;
 
     //declaramos 3 variables static para usar como parametros en la conexion
-    public static final String URL ="jdbc:mysql://localhost:3306/Smash?autoReconnect=true&useSSL=false";
+    public static final String URL = "jdbc:mysql://localhost:3306/Smash?autoReconnect=true&useSSL=false";
     public static final String usuario = "root";
     public static final String pass = "Readingsteiner9";
-    static PreparedStatement ps ;
-    static ResultSet rs ;
+    static PreparedStatement ps;
+    static ResultSet rs;
 
+    //Frame principal
     public Swing() {
         this.setTitle("CRUD-Smash");
         this.setSize(700, 500);
         this.setResizable(false);
         this.setLocationRelativeTo(null);
-        Act_paneles();
+        J_panel_m();
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setVisible(true);
     }
 
-    public void Act_paneles() {
-        J_panel_m();
-        J_button();
-        J_label();
-        J_text_field();
-    }
-
+    //Metodo para Panel principal
     public void J_panel_m() {
         panel = new JPanel();
         this.getContentPane().add(panel);
         panel.setBackground(Color.white);
         panel.setLayout(null);
+        J_button();
+        J_label();
+        J_text_field();
     }
 
+    //Labels del panel principal
     public void J_label() {
         JLabel nombre = new JLabel("Ingresa el nombre:");
         nombre.setBounds(150, 43, 300, 100);
@@ -79,11 +78,9 @@ public class Swing extends JFrame {
         alcanze.setBounds(150, 263, 300, 100);
         panel.add(alcanze);
 
-        /*JLabel buscar = new JLabel("Buscar a tu personaje :");
-        buscar.setBounds(140, 1, 300, 70);
-        panel.add(buscar);*/
     }
 
+    //campos del panel principal
     public void J_text_field() {
         String[] tipo = {"Combatiente", "Mago", "Mixto"};
 
@@ -117,6 +114,7 @@ public class Swing extends JFrame {
         panel.add(buscar);*/
     }
 
+    //botones del panel principal
     public void J_button() {
         JButton agregar = new JButton("Agregar a tabla preliminar");
         agregar.setBounds(170, 400, 200, 70);
@@ -125,8 +123,7 @@ public class Swing extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String tipo = I_tipo.getSelectedItem().toString();
-                //aqui tengo que asegurar que haya rellenado los campos antes
-                opcion = boton_extra(tipo);
+                opcion = eleccion_habilidad_extra(tipo);
                 Agregar_personajes_preeliminares(opcion);
                 limpiar();
             }
@@ -138,13 +135,19 @@ public class Swing extends JFrame {
         consultar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                panel_tabla();
-                panel.setVisible(false);
+                act_listado_preeliminar();
             }
         });
     }
-    //boton extra para habilidad especial
-    public int boton_extra(String tipo) {
+
+    //Configuracion para inciar el listado preeliminar
+    public void act_listado_preeliminar() {
+        panel_tabla();
+        panel.setVisible(false);
+    }
+
+    //boton para eleccion del boton extra
+    public int eleccion_habilidad_extra(String tipo) {
         switch (tipo) {
             case "Combatiente":
                 golpe_b = JOptionPane.showInputDialog("Nombra a la habilidad de tu combatiente:");
@@ -162,40 +165,13 @@ public class Swing extends JFrame {
         return opcion;
     }
 
+    //metodo para limpiar los campos
     public void limpiar() {
         I_nombre.setText("");
         I_vida.setText("");
         I_alcanze.setText("");
         I_resistencia.setText("");
     }
-
-    public void Agregar_personajes_preeliminares(int opcion) {
-        String nombre = I_nombre.getText();
-        String s_vida = I_vida.getText();
-        String tipo = I_tipo.getSelectedItem().toString();
-        String s_resistencia = I_resistencia.getText();
-        String s_alcanze = I_alcanze.getText();
-
-        if(!nombre.isEmpty()&&!s_vida.isEmpty()&&!tipo.isEmpty()&&!s_resistencia.isEmpty()&&!s_alcanze.isEmpty()){
-
-            int vida = Integer.parseInt(I_vida.getText());
-            int resistencia = Integer.parseInt(I_resistencia.getText());
-            int alcanze = Integer.parseInt(I_alcanze.getText());
-            switch (opcion) {
-                case 1:
-                    personajes.add(new Combatiente(nombre, tipo, vida, resistencia, alcanze, golpe_b));
-                    break;
-                case 2:
-                    personajes.add(new Mago(nombre, tipo, vida, resistencia, alcanze, mana_b));
-                    break;
-                case 3:
-                    personajes.add(new Mixto(nombre, tipo, vida, resistencia, alcanze, haki_b));
-            }
-            JOptionPane.showMessageDialog(null,"Nombre:"+nombre+"\n"+"Vida:"+vida+"\n"+"Tipo:"+tipo+"\n"+"Resistencia:"+resistencia+"\n"+"Alcanze:"+alcanze);
-        }else {
-            JOptionPane.showMessageDialog(null,"Rellena todos los campos ");
-            }
-        }
 
     public void panel_tabla() {
         if (panel_tabla == null) {
@@ -220,11 +196,11 @@ public class Swing extends JFrame {
             scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
             scroll.setBounds(105, 1, 470, 300);
 
-            B_cerrar_tabla();
-            Eliminar_elemento_preeliminar();
-            B_insertar_bd();
-            Configuracion_avanzada();
-            Editar_lista_preeliminar();
+            B_cerrar_tabla();//aqui tengo un boton
+            Eliminar_elemento_preeliminar();//boton elemento preeliminar
+            B_insertar_bd();//boton para insercion a la bd
+            Configuracion_avanzada();//boton para acceder a listado general
+            Editar_lista_preeliminar();//editar elemento lista preeliminar
             panel_tabla.add(scroll);
             panel_tabla.add(cerrar_tabla);
             panel_tabla.add(eliminar_button);
@@ -241,7 +217,115 @@ public class Swing extends JFrame {
 
     }
 
-    public void B_cerrar_tabla(){
+    public void J_button_panel_preeliminar() {
+        editar_list_preeliminar = new JButton("Editar personaje");
+        editar_list_preeliminar.setBounds(260, 300, 145, 70);
+
+        editar_list_preeliminar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String nombre_mod = "", habilidad_mod = "";
+                int vida_mod = 0, resistencia_mod = 0, alcanze_mod = 0;
+
+                String opcion_mod = "";
+                String opcion_validada = "";
+
+                seleccionar_elemento_tabla();
+                if (!personajes.isEmpty() && !fila_seleccionada) {
+                    boolean salir = false;
+                    do {
+                        opcion_mod = JOptionPane.showInputDialog("¿Que deseas modificar?" + "\n" + "Nombre" + "\n" + "Vida" + "\n" + "Resistencia" + "\n" + "Alcanze" + "\n" + "Habilidad" + "\n" + "Salir");
+                        opcion_validada = opcion_mod.toLowerCase();
+
+                        switch (opcion_validada) {
+                            case "nombre":
+                                //validad no genera problema
+                                nombre_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre:");
+                                personajes.get(indice_Fila_Seleccionada).setNombre(nombre_mod);
+                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nuevo nombre es : " + nombre_mod);
+                                break;
+                            case "vida":
+                                //validado
+                                vida_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa la nueva vida:"));
+                                personajes.get(indice_Fila_Seleccionada).setVida(vida_mod);
+                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nueva vida es : " + vida_mod);
+                                break;
+                            case "resistencia":
+                                resistencia_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa la nueva resistencia:"));
+                                personajes.get(indice_Fila_Seleccionada).setResistencia(resistencia_mod);
+                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nueva resistencia es : " + resistencia_mod);
+                                break;
+                            case "alcanze":
+                                alcanze_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa el nuevo alcanze:"));
+                                personajes.get(indice_Fila_Seleccionada).setAlcanze(alcanze_mod);
+                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nuevo alcanze es : " + alcanze_mod);
+                                break;
+                            case "habilidad":
+                                habilidad_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre de tu habilidad (En el caso del mago anota su cantidad de mana):");
+
+                                if (personajes.get(indice_Fila_Seleccionada).getTipo().equals("Combatiente") || personajes.get(indice_Fila_Seleccionada).getTipo().equals("Mixto")) {
+                                    personajes.get(indice_Fila_Seleccionada).setha(habilidad_mod);
+                                } else {
+                                    personajes.get(indice_Fila_Seleccionada).setha(Integer.parseInt(habilidad_mod));
+                                }
+                                JOptionPane.showMessageDialog(null, "Se modifico con exito tu nueva habilidad  o cantidad de mana es : " + habilidad_mod);
+                                break;
+                            case "salir":
+                                break;
+                            default:
+                                JOptionPane.showMessageDialog(null, "Esa no es una opción valida para modificar o para salir del menu ");
+                        }
+                        if (opcion_validada.equals("salir")) {
+                            salir = true;
+                        }
+                    } while (!salir);
+                } else if (personajes.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "No hay elementos parar editar");
+                } else {
+                    JOptionPane.showMessageDialog(null, "No seleccionaste ningun elemento");
+
+                }
+                actualizarTabla();
+
+            }
+
+        });
+    }
+
+    public void Agregar_personajes_preeliminares(int opcion) {
+        String nombre = I_nombre.getText();
+        String s_vida = I_vida.getText();
+        String tipo = I_tipo.getSelectedItem().toString();
+        String s_resistencia = I_resistencia.getText();
+        String s_alcanze = I_alcanze.getText();
+
+        if (!nombre.isEmpty() && !s_vida.isEmpty() && !tipo.isEmpty() && !s_resistencia.isEmpty() && !s_alcanze.isEmpty()) {
+
+            int vida = Integer.parseInt(I_vida.getText());
+            int resistencia = Integer.parseInt(I_resistencia.getText());
+            int alcanze = Integer.parseInt(I_alcanze.getText());
+            switch (opcion) {
+                case 1:
+                    personajes.add(new Combatiente(nombre, tipo, vida, resistencia, alcanze, golpe_b));
+                    break;
+                case 2:
+                    personajes.add(new Mago(nombre, tipo, vida, resistencia, alcanze, mana_b));
+                    break;
+                case 3:
+                    personajes.add(new Mixto(nombre, tipo, vida, resistencia, alcanze, haki_b));
+            }
+            JOptionPane.showMessageDialog(null, "Nombre:" + nombre + "\n" + "Vida:" + vida + "\n" + "Tipo:" + tipo + "\n" + "Resistencia:" + resistencia + "\n" + "Alcanze:" + alcanze);
+        } else {
+            JOptionPane.showMessageDialog(null, "Rellena todos los campos ");
+        }
+    }
+
+    public void Editar_lista_preeliminar() {
+
+
+    }
+
+    public void B_cerrar_tabla() {
         cerrar_tabla = new JButton("Cerrar tabla");
         cerrar_tabla.setBounds(100, 300, 120, 70);
         cerrar_tabla.addActionListener(new ActionListener() {
@@ -253,130 +337,54 @@ public class Swing extends JFrame {
         });
     }
 
-    public void B_insertar_bd(){
+    public void Eliminar_elemento_preeliminar() {
+        eliminar_button = new JButton("Eliminar jugador");
+        eliminar_button.setBounds(430, 300, 150, 70);
+
+        eliminar_button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!personajes.isEmpty()) {
+                    seleccionar_elemento_tabla();
+                    personajes.remove(indice_Fila_Seleccionada);
+                    actualizarTabla();
+                } else {
+                    JOptionPane.showMessageDialog(null, "No hay elementos por eliminar checa bien topo");
+                }
+            }
+        });
+
+    }
+
+    public void B_insertar_bd() {
         insercion_bd = new JButton("Insertar al listado general");
         insercion_bd.setBounds(250, 400, 180, 70);
         insercion_bd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!personajes.isEmpty()){
+                if (!personajes.isEmpty()) {
                     insertar_array();
-                }else {
-                    JOptionPane.showMessageDialog(null,"No hay registros preeliminares");
+                } else {
+                    JOptionPane.showMessageDialog(null, "No hay registros preeliminares");
                 }
             }
         });
     }
 
-    public void Configuracion_avanzada(){
+    public void Configuracion_avanzada() {
         ImageIcon image = new ImageIcon("Configuracion.png");
         configuraciones_avanzadas = new JButton();
         configuraciones_avanzadas.setBounds(100, 400, 70, 70);
-        configuraciones_avanzadas.setIcon(new ImageIcon(image.getImage().getScaledInstance(70,70,Image.SCALE_SMOOTH)));
+        configuraciones_avanzadas.setIcon(new ImageIcon(image.getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH)));
 
         configuraciones_avanzadas.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                JOptionPane.showMessageDialog(null, "Esta es la configuracion avanzada \nEn el siguiente apartado encontraras  los registros definitivos \nSe puede modificar al gusto del administrador");
+                panel_listado_general();
+                /*listado_general();*/
             }
         });
-    }
-
-    public void Eliminar_elemento_preeliminar(){
-        eliminar_button = new JButton("Eliminar jugador");
-        eliminar_button.setBounds(430, 300, 150, 70);
-
-            eliminar_button.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if(!personajes.isEmpty()){
-                        seleccionar_elemento_tabla();
-                        personajes.remove(indice_Fila_Seleccionada);
-                        actualizarTabla();
-                    }else{
-                        JOptionPane.showMessageDialog(null,"No hay elementos por eliminar checa bien topo");
-                    }
-                }
-            }
-            );
-
-    }
-
-    public void Editar_lista_preeliminar(){
-        editar_list_preeliminar = new JButton("Editar personaje");
-        editar_list_preeliminar.setBounds(260, 300, 145, 70);
-
-        editar_list_preeliminar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String nombre_mod ="", habilidad_mod ="";
-                int vida_mod = 0,resistencia_mod = 0, alcanze_mod=0;
-
-                String opcion_mod = "";
-                String opcion_validada = "";
-
-                seleccionar_elemento_tabla();
-                if (!personajes.isEmpty() && !fila_seleccionada) {
-                    boolean salir = false;
-                    do {
-                        opcion_mod = JOptionPane.showInputDialog("¿Que deseas modificar?"+"\n"+"Nombre"+"\n"+"Vida"+"\n"+"Resistencia"+"\n"+"Alcanze"+"\n"+"Habilidad"+"\n"+"Salir");
-                        opcion_validada = opcion_mod.toLowerCase();
-
-                        switch (opcion_validada) {
-                            case "nombre":
-                                //validad no genera problema
-                                nombre_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre:");
-                                personajes.get(indice_Fila_Seleccionada).setNombre(nombre_mod);
-                                JOptionPane.showMessageDialog(null,"Se modifico con exito tu nuevo nombre es : "+nombre_mod);
-                                break;
-                            case "vida":
-                                //validado
-                                vida_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa la nueva vida:"));
-                                personajes.get(indice_Fila_Seleccionada).setVida(vida_mod);
-                                JOptionPane.showMessageDialog(null,"Se modifico con exito tu nueva vida es : "+vida_mod);
-                                break;
-                            case "resistencia":
-                                resistencia_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa la nueva resistencia:"));
-                                personajes.get(indice_Fila_Seleccionada).setResistencia(resistencia_mod);
-                                JOptionPane.showMessageDialog(null,"Se modifico con exito tu nueva resistencia es : "+resistencia_mod);
-                                break;
-                            case "alcanze":
-                                alcanze_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa el nuevo alcanze:"));
-                                personajes.get(indice_Fila_Seleccionada).setAlcanze(alcanze_mod);
-                                JOptionPane.showMessageDialog(null,"Se modifico con exito tu nuevo alcanze es : "+alcanze_mod);
-                                break;
-                            case "habilidad":
-                                habilidad_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre de tu habilidad (En el caso del mago anota su cantidad de mana):");
-
-                                if(personajes.get(indice_Fila_Seleccionada).getTipo().equals("Combatiente")||personajes.get(indice_Fila_Seleccionada).getTipo().equals("Mixto")){
-                                    personajes.get(indice_Fila_Seleccionada).setha(habilidad_mod);
-                                }else {
-                                    personajes.get(indice_Fila_Seleccionada).setha(Integer.parseInt(habilidad_mod));
-                                }
-                                JOptionPane.showMessageDialog(null,"Se modifico con exito tu nueva habilidad  o cantidad de mana es : "+habilidad_mod);
-                                break;
-                            case "salir":
-                                break;
-                            default:
-                                JOptionPane.showMessageDialog(null, "Esa no es una opción valida para modificar o para salir del menu ");
-                        }
-                        if (opcion_validada.equals("salir")) {
-                            salir = true;
-                        }
-                    } while (!salir);
-                }else if(personajes.isEmpty()){
-                    JOptionPane.showMessageDialog(null, "No hay elementos parar editar");
-                }else{
-                    JOptionPane.showMessageDialog(null, "No seleccionaste ningun elemento");
-
-                }
-                actualizarTabla();
-
-            }
-
-        }
-        );
-
     }
 
     public void actualizarTabla() {
@@ -398,7 +406,7 @@ public class Swing extends JFrame {
         seleccionar_elemento_tabla();
     }
 
-    public void seleccionar_elemento_tabla(){
+    public void seleccionar_elemento_tabla() {
         tabla_preeliminar.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -406,61 +414,193 @@ public class Swing extends JFrame {
                 if (tabla_preeliminar.getSelectedRowCount() == 1) {
                     indice_Fila_Seleccionada = tabla_preeliminar.getSelectedRow();
                     fila_seleccionada = false;
-                }else{
-                    fila_seleccionada = true ;
+                } else {
+                    fila_seleccionada = true;
                 }
             }
 
         });
     }
-    //metodo para la conexion a la bd
-    public static Connection getConection(){
-        Connection cx = null ;
+
+    public static Connection getConection() {
+        Connection cx = null;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            cx = (Connection) DriverManager.getConnection(URL,usuario,pass);
-        }catch (Exception e){
+            cx = (Connection) DriverManager.getConnection(URL, usuario, pass);
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return cx;
     }
 
-    public void  insertar_array(){
+    public void insertar_array() {
         //tenemos que declarar el objeto conexion como null
-        Connection cx = null ;
+        Connection cx = null;
 
         try {
             cx = getConection();
             ps = cx.prepareStatement("INSERT INTO Personaje(P_nombre,P_tipo,P_vida,P_resistencia,P_alcanze ,P_habilidad ) VALUES (?,?,?,?,?,?)");
             int resultado = 0;
-            for(int i = 0;i<personajes.size();i++){
+            for (int i = 0; i < personajes.size(); i++) {
                 Personaje p = personajes.get(i);
-                ps.setString(1,p.getNombre());
-                ps.setString(2,p.getTipo());
-                ps.setInt(3,p.getVida());
-                ps.setInt(4,p.getResistencia());
-                ps.setInt(5,p.getAlcanze());
-                ps.setString(6,p.getha());
+                ps.setString(1, p.getNombre());
+                ps.setString(2, p.getTipo());
+                ps.setInt(3, p.getVida());
+                ps.setInt(4, p.getResistencia());
+                ps.setInt(5, p.getAlcanze());
+                ps.setString(6, p.getha());
                 resultado = ps.executeUpdate();
             }
-            if(resultado>0){
-                JOptionPane.showMessageDialog(null,"Insercion de nuevos registros exitosos");
+            if (resultado > 0) {
+                JOptionPane.showMessageDialog(null, "Insercion de nuevos registros exitosos");
                 //tengo que reiniciar el Jtable
                 modelo.setRowCount(0);
                 //tengo que actualizar el array list
                 personajes.removeAll(personajes);
-                System.out.println("asegurarnos de que la lista se reinicio:"+personajes.size());
+                System.out.println("asegurarnos de que la lista se reinicio:" + personajes.size());
 
-            }else{
-                JOptionPane.showMessageDialog(null,"No se inserto correctamente");
+            } else {
+                JOptionPane.showMessageDialog(null, "No se inserto correctamente");
             }
 
-        }catch (Exception e){
-            System.err.println("Error:"+e);
+        } catch (Exception e) {
+            System.err.println("Error:" + e);
         }
     }
 
+    public void panel_listado_general() {
+        if (panel_listado_general == null) {
+            //Configuracion del panel
+            panel_listado_general = new JPanel();
+            panel_listado_general.setBackground(Color.white);
+            panel_listado_general.setLayout(null);
+            this.getContentPane().add(panel_listado_general);
+
+            //establecer el modelo
+            String[] columnas = {"id", "nombre", "tipo", "vida", "resistencia", "alcanze", "habilidad"};
+            modelo = new DefaultTableModel(columnas, 0) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+
+            //asignar el modelo
+            tabla_general = new JTable(modelo);
+            tabla_general.setBounds(105, 1, 470, 300);
+
+            //asignacion del scroll
+            scroll = new JScrollPane(tabla_general);
+            scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+            scroll.setBounds(105, 1, 470, 300);
+
+            //metodo para activar los botones
+            J_button_panel_general();
+
+            /*B_cerrar_tabla();
+            Eliminar_elemento_preeliminar();
+            B_insertar_bd();
+            Configuracion_avanzada();
+            Editar_lista_preeliminar();*/
+            panel_listado_general.add(scroll);
+            //necesito generar un boton para cerrar denuevo el general y regresar al pree o al inicio
+            //necesito generar un boton para borrra elemento
+            //este boton se reemplazara para busqueda
+            //este es para editar elementos de la lista general
+        }
+
+        panel_listado_general.setVisible(true);
+        panel_tabla.setVisible(false);
+        panel.setVisible(false);
+
+    }
     //ver listado general
+
+
+    public void J_button_panel_general() {
+        JButton editar_jugador_general = new JButton("Editar jugador");
+        editar_jugador_general.setBounds(170, 400, 200, 70);
+        panel_listado_general.add(editar_jugador_general);
+        editar_jugador_general.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+
+        JButton visualizar_lista_general = new JButton("Ver lista general");
+        visualizar_lista_general.setBounds(370, 400, 200, 70);
+        panel_listado_general.add(visualizar_lista_general);
+        visualizar_lista_general.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+
+        JButton eliminar_jugador_general = new JButton("Eliminar jugador");
+        eliminar_jugador_general.setBounds(370, 400, 200, 70);
+        panel_listado_general.add(eliminar_jugador_general);
+        eliminar_jugador_general.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+        JButton buscar_jugador_general = new JButton("buscar jugador");
+        buscar_jugador_general.setBounds(370, 400, 200, 70);
+        panel_listado_general.add(buscar_jugador_general);
+        buscar_jugador_general.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+    }
+
+    public void listado_general() {
+        String[] registros = new String[7];
+        Connection cx = null;
+        String consulta = "SELECT * FROM Personaje ";
+        try {
+            cx = getConection();
+            ps = cx.prepareStatement(consulta);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+
+                /*CREATE TABLE Personaje(
+                        P_id INT  PRIMARY KEY AUTO_INCREMENT,
+                        P_nombre VARCHAR(15) NOT NULL ,
+                        P_tipo VARCHAR(15) NOT NULL ,
+                        P_vida INT  NOT NULL,
+                        P_resistencia INT NOT NULL ,
+                        P_alcanze INT NOT NULL,
+                        P_habilidad VARCHAR(15) NOT NULL
+                );*/
+                registros[0] = rs.getString("P_id");
+                registros[1] = rs.getString("P_nombre");
+                registros[2] = rs.getString("P_tipo");
+                registros[3] = rs.getString("P_vida");
+                registros[4] = rs.getString("P_resistencia");
+                registros[5] = rs.getString("P_alcanze");
+                registros[6] = rs.getString("P_Habilidad");
+                modelo.addRow(registros);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("error en pasar datos tonto ");
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (cx != null) cx.close();
+            } catch (SQLException e) {
+                System.out.println(e);
+            }
+        }
+    }
+
     //eliminador elemento del listado general
     //buscar elemento del listado general
     //buscar elemento de lista preeliminar
