@@ -16,17 +16,19 @@ public class Combatiente extends Personaje{
     public void setGolpe_bajo(String golpe_bajo) {
         this.golpe = golpe_bajo;
     }
+
+
     @Override
-    public String getha(){
+    public String getHabilidad(){
         return golpe;
     }
     @Override
-    public void setha(String nombre_hab) {
+    public void setHabilidad(String nombre_hab) {
         this.golpe = nombre_hab;
     }
 
     @Override
-    public void setha(int can_mana) {
+    public void setHabilidad(int can_mana) {
         throw new UnsupportedOperationException("Combatiente no usa maná.");
     }
     @Override
@@ -35,7 +37,7 @@ public class Combatiente extends Personaje{
                 "tipo:"+getTipo()+"\n"+
                 "vida:"+getVida()+"\n"+
                 "Resistencia:"+getResistencia()+"\n"+
-                "alcanze:"+getAlcanze()+"\n"+
+                "alcance:"+getAlcance()+"\n"+
                 "golpe:" + golpe;
     }
 }

@@ -1,8 +1,11 @@
 package CRUD;
 
 public class Mixto extends Personaje {
-    private String haki ;
-    public Mixto (){}
+
+    private String haki;
+
+    public Mixto() {
+    }
 
     public Mixto(String nombre, String tipo, int vida, int resistencia, int alcanze, String haki) {
         super(nombre, tipo, vida, resistencia, alcanze);
@@ -16,26 +19,29 @@ public class Mixto extends Personaje {
     public void setHaki(String haki) {
         this.haki = haki;
     }
+
     @Override
-    public String getha(){
+    public String getHabilidad() {
         return haki;
     }
+
     @Override
-    public void setha(String nombre_hab) {
+    public void setHabilidad(String nombre_hab) {
         this.haki = nombre_hab;
     }
+
     @Override
-    public void setha(int can_mana) {
+    public void setHabilidad(int can_mana) {
         throw new UnsupportedOperationException("Mixto no usa maná.");
     }
 
     @Override
     public String toString() {
-        return  "Nombre:"+getNombre()+"\n"+
-                "tipo:"+getTipo()+"\n"+
-                "vida:"+getVida()+"\n"+
-                "Resistencia:"+getResistencia()+"\n"+
-                "alcanze:"+getAlcanze()+"\n"+
-                "haki:" + haki ;
+        return "Nombre:" + getNombre() + "\n" +
+                "tipo:" + getTipo() + "\n" +
+                "vida:" + getVida() + "\n" +
+                "Resistencia:" + getResistencia() + "\n" +
+                "alcance:" + getAlcance() + "\n" +
+                "haki:" + haki;
     }
 }

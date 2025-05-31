@@ -30,10 +30,8 @@ public class Swing extends JFrame {
     boolean fila_seleccionada_general = true;
 
     //declaramos 3 variables static para usar como parametros en la conexion
-    public static final String URL = "jdbc:mysql://localhost:3306/Smash?autoReconnect=true&useSSL=false";
-    public static final String usuario = "root";
-    public static final String pass = "Readingsteiner9";
-    Connection cx ;
+    MysqlConnection sql = new MysqlConnection();
+    Connection cx;
     static PreparedStatement ps;
     static ResultSet rs;
 
@@ -41,7 +39,7 @@ public class Swing extends JFrame {
     public Swing() {
         this.setTitle("CRUD-Smash");
         this.setSize(700, 500);
-        this.setResizable(false);
+        this.setResizable(true);
         this.setLocationRelativeTo(null);
         J_panel_m();
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -288,16 +286,16 @@ public class Swing extends JFrame {
                                 break;
                             case "alcanze":
                                 alcanze_mod = Integer.parseInt(JOptionPane.showInputDialog("Ingresa el nuevo alcanze:"));
-                                personajes.get(indice_Fila_Seleccionada).setAlcanze(alcanze_mod);
+                                personajes.get(indice_Fila_Seleccionada).setAlcance(alcanze_mod);
                                 JOptionPane.showMessageDialog(null, "Se modifico con exito tu nuevo alcanze es : " + alcanze_mod);
                                 break;
                             case "habilidad":
                                 habilidad_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre de tu habilidad (En el caso del mago anota su cantidad de mana):");
 
                                 if (personajes.get(indice_Fila_Seleccionada).getTipo().equals("Combatiente") || personajes.get(indice_Fila_Seleccionada).getTipo().equals("Mixto")) {
-                                    personajes.get(indice_Fila_Seleccionada).setha(habilidad_mod);
+                                    personajes.get(indice_Fila_Seleccionada).setHabilidad(habilidad_mod);
                                 } else {
-                                    personajes.get(indice_Fila_Seleccionada).setha(Integer.parseInt(habilidad_mod));
+                                    personajes.get(indice_Fila_Seleccionada).setHabilidad(Integer.parseInt(habilidad_mod));
                                 }
                                 JOptionPane.showMessageDialog(null, "Se modifico con exito tu nueva habilidad  o cantidad de mana es : " + habilidad_mod);
                                 break;
@@ -363,7 +361,7 @@ public class Swing extends JFrame {
                 if (!personajes.isEmpty()) {
                     insertar_array();
                 } else {
-                    JOptionPane.showMessageDialog(null, "No hay registros preeliminares");
+                    JOptionPane.showMessageDialog(null, "No hay registros preliminares");
                 }
             }
         });
@@ -395,8 +393,8 @@ public class Swing extends JFrame {
                     p.getTipo(),
                     p.getVida(),
                     p.getResistencia(),
-                    p.getAlcanze(),
-                    p.getha()
+                    p.getAlcance(),
+                    p.getHabilidad()
             };
             modelo.addRow(fila);
 
@@ -420,23 +418,12 @@ public class Swing extends JFrame {
         });
     }
 
-    public static Connection getConection() {
-        Connection cx = null;
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            cx = (Connection) DriverManager.getConnection(URL, usuario, pass);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return cx;
-    }
-
     public void insertar_array() {
         //tenemos que declarar el objeto conexion como null
         Connection cx = null;
 
         try {
-            cx = getConection();
+            cx = sql.getDatabaseConnection();
             ps = cx.prepareStatement("INSERT INTO Personaje(P_nombre,P_tipo,P_vida,P_resistencia,P_alcanze ,P_habilidad ) VALUES (?,?,?,?,?,?)");
             int resultado = 0;
             for (int i = 0; i < personajes.size(); i++) {
@@ -445,8 +432,8 @@ public class Swing extends JFrame {
                 ps.setString(2, p.getTipo());
                 ps.setInt(3, p.getVida());
                 ps.setInt(4, p.getResistencia());
-                ps.setInt(5, p.getAlcanze());
-                ps.setString(6, p.getha());
+                ps.setInt(5, p.getAlcance());
+                ps.setString(6, p.getHabilidad());
                 resultado = ps.executeUpdate();
             }
             if (resultado > 0) {
@@ -463,6 +450,12 @@ public class Swing extends JFrame {
 
         } catch (Exception e) {
             System.err.println("Error:" + e);
+        } finally {
+            try {
+                sql.closeDatabaseConnection(cx);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -539,16 +532,16 @@ public class Swing extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String nombre_mod, habilidad_mod;
-                String  vida_mod,  resistencia_mod , alcanze_mod;
+                String vida_mod, resistencia_mod, alcanze_mod;
 
-                String opcion_mod ;
-                String opcion_validada ;
+                String opcion_mod;
+                String opcion_validada;
 
 
                 try {
-                    Connection cx = null ;
+                    Connection cx = null;
                     String consulta_busqueda = "";
-                    cx = getConection();
+                    cx = sql.getDatabaseConnection();
 
                     if (!fila_seleccionada_general) {
                         boolean salir = false;
@@ -561,35 +554,35 @@ public class Swing extends JFrame {
                                     nombre_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre:");
 
                                     //Aqui falta la logica
-                                    consulta_busqueda ="UPDATE Personaje SET P_nombre = ? WHERE P_id = ?";
+                                    consulta_busqueda = "UPDATE Personaje SET P_nombre = ? WHERE P_id = ?";
                                     ps = cx.prepareStatement(consulta_busqueda);
-                                    ps.setString(1,nombre_mod);
+                                    ps.setString(1, nombre_mod);
                                     ps.setString(2, String.valueOf(tabla_general.getValueAt(indice_Fila_Seleccionada, 0)));
 
-                                    if(ps.executeUpdate()>0){
+                                    if (ps.executeUpdate() > 0) {
                                         JOptionPane.showMessageDialog(null, "Se modifico con exito tu nuevo nombre es : " + nombre_mod);
                                         modelo.setRowCount(0);
                                         listado_general();
-                                    }else{
+                                    } else {
                                         JOptionPane.showMessageDialog(null, "No se ha podido actualizar  el nombre\n"
-                                                        + JOptionPane.ERROR_MESSAGE);
+                                                + JOptionPane.ERROR_MESSAGE);
                                     }
 
                                     break;
                                 case "vida":
                                     //validado
-                                    vida_mod =JOptionPane.showInputDialog("Ingresa la nueva vida:");
+                                    vida_mod = JOptionPane.showInputDialog("Ingresa la nueva vida:");
                                     ///Aqui falta la logica
-                                    consulta_busqueda ="UPDATE Personaje SET P_vida = ? WHERE P_id = ?";
+                                    consulta_busqueda = "UPDATE Personaje SET P_vida = ? WHERE P_id = ?";
                                     ps = cx.prepareStatement(consulta_busqueda);
-                                    ps.setString(1,vida_mod);
+                                    ps.setString(1, vida_mod);
                                     ps.setString(2, String.valueOf(tabla_general.getValueAt(indice_Fila_Seleccionada, 0)));
 
-                                    if(ps.executeUpdate()>0){
+                                    if (ps.executeUpdate() > 0) {
                                         JOptionPane.showMessageDialog(null, "Se modifico con exito, tu vida es : " + vida_mod);
                                         modelo.setRowCount(0);
                                         listado_general();
-                                    }else{
+                                    } else {
                                         JOptionPane.showMessageDialog(null, "No se ha podido actualizar  la vida\n"
                                                 + JOptionPane.ERROR_MESSAGE);
                                     }
@@ -597,16 +590,16 @@ public class Swing extends JFrame {
                                 case "resistencia":
                                     resistencia_mod = JOptionPane.showInputDialog("Ingresa la nueva resistencia:");
                                     ///Aqui falta la logica
-                                    consulta_busqueda ="UPDATE Personaje SET P_resistencia = ? WHERE P_id = ?";
+                                    consulta_busqueda = "UPDATE Personaje SET P_resistencia = ? WHERE P_id = ?";
                                     ps = cx.prepareStatement(consulta_busqueda);
-                                    ps.setString(1,resistencia_mod);
+                                    ps.setString(1, resistencia_mod);
                                     ps.setString(2, String.valueOf(tabla_general.getValueAt(indice_Fila_Seleccionada, 0)));
 
-                                    if(ps.executeUpdate()>0){
+                                    if (ps.executeUpdate() > 0) {
                                         JOptionPane.showMessageDialog(null, "Se modifico con exito, tu resistencia es : " + resistencia_mod);
                                         modelo.setRowCount(0);
                                         listado_general();
-                                    }else{
+                                    } else {
                                         JOptionPane.showMessageDialog(null, "No se ha podido actualizar  la resistencia \n"
                                                 + JOptionPane.ERROR_MESSAGE);
                                     }
@@ -614,16 +607,16 @@ public class Swing extends JFrame {
                                 case "alcanze":
                                     alcanze_mod = JOptionPane.showInputDialog("Ingresa el nuevo alcanze:");
                                     ///Aqui falta la logica
-                                    consulta_busqueda ="UPDATE Personaje SET P_alcanze = ? WHERE P_id = ?";
+                                    consulta_busqueda = "UPDATE Personaje SET P_alcanze = ? WHERE P_id = ?";
                                     ps = cx.prepareStatement(consulta_busqueda);
-                                    ps.setString(1,alcanze_mod);
+                                    ps.setString(1, alcanze_mod);
                                     ps.setString(2, String.valueOf(tabla_general.getValueAt(indice_Fila_Seleccionada, 0)));
 
-                                    if(ps.executeUpdate()>0){
+                                    if (ps.executeUpdate() > 0) {
                                         JOptionPane.showMessageDialog(null, "Se modifico con exito, tu alcanze es : " + alcanze_mod);
                                         modelo.setRowCount(0);
                                         listado_general();
-                                    }else{
+                                    } else {
                                         JOptionPane.showMessageDialog(null, "No se ha podido actualizar  el alcanze\n"
                                                 + JOptionPane.ERROR_MESSAGE);
                                     }
@@ -632,16 +625,16 @@ public class Swing extends JFrame {
                                     habilidad_mod = JOptionPane.showInputDialog("Ingresa el nuevo nombre de tu habilidad \n(En el caso del mago anota su cantidad de mana):");
 
                                     ///Aqui falta la logica
-                                    consulta_busqueda ="UPDATE Personaje SET P_habilidad = ? WHERE P_id = ?";
+                                    consulta_busqueda = "UPDATE Personaje SET P_habilidad = ? WHERE P_id = ?";
                                     ps = cx.prepareStatement(consulta_busqueda);
-                                    ps.setString(1,habilidad_mod);
+                                    ps.setString(1, habilidad_mod);
                                     ps.setString(2, String.valueOf(tabla_general.getValueAt(indice_Fila_Seleccionada, 0)));
 
-                                    if(ps.executeUpdate()>0){
+                                    if (ps.executeUpdate() > 0) {
                                         JOptionPane.showMessageDialog(null, "Se modifico con exito, tu habilidad es : " + habilidad_mod);
                                         modelo.setRowCount(0);
                                         listado_general();
-                                    }else{
+                                    } else {
                                         JOptionPane.showMessageDialog(null, "No se ha podido actualizar  tu habilidad\n"
                                                 + JOptionPane.ERROR_MESSAGE);
                                     }
@@ -660,10 +653,15 @@ public class Swing extends JFrame {
                     } else {
                         JOptionPane.showMessageDialog(null, "No seleccionaste ningun elemento");
                     }
-                }catch (Exception busqueda){
+                } catch (Exception busqueda) {
                     System.err.println(busqueda);
+                } finally {
+                    try {
+                        sql.closeDatabaseConnection(cx);
+                    } catch (SQLException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
-
 
 
             }
@@ -698,7 +696,7 @@ public class Swing extends JFrame {
                 String consulta = "SELECT * FROM Personaje WHERE P_id=?";
 
                 try {
-                    cx = getConection();
+                    cx = sql.getDatabaseConnection();
                     ps = cx.prepareStatement(consulta);
                     ps.setInt(1, id);  // Mejor usar setInt si el campo es numérico
                     rs = ps.executeQuery();
@@ -725,8 +723,8 @@ public class Swing extends JFrame {
                         if (rs != null) rs.close();
                         if (ps != null) ps.close();
                         if (cx != null) cx.close();
-                    } catch (SQLException error) {
-                        System.out.println(error);
+                    } catch (SQLException ex) {
+                        ex.getStackTrace();
                     }
                 }
             }
@@ -744,23 +742,23 @@ public class Swing extends JFrame {
 
                     try {
                         String consulta = "DELETE FROM Personaje WHERE P_id=?";
-                        cx =getConection();
+                        cx = sql.getDatabaseConnection();
                         ps = cx.prepareStatement(consulta);
 
                         ps.setString(1, String.valueOf(tabla_general.getValueAt(indice_Fila_Seleccionada, 0)));
 
-                        if(ps.executeUpdate()>0){
+                        if (ps.executeUpdate() > 0) {
                             JOptionPane.showMessageDialog(null, "El registro ha sido eliminado exitosamente operación Exitosa");
                             modelo.setRowCount(0);
                             listado_general();
-                        }else{
+                        } else {
 
                             JOptionPane.showMessageDialog(null, "No se ha podido eliminar el registro\n"
                                             + "Inténtelo nuevamente.", "Error en la operación",
                                     JOptionPane.ERROR_MESSAGE);
 
                         }
-                    }catch (Exception eliminar) {
+                    } catch (Exception eliminar) {
                         System.err.println(eliminar);
 
                     } finally {
@@ -768,8 +766,8 @@ public class Swing extends JFrame {
                             if (rs != null) rs.close();
                             if (ps != null) ps.close();
                             if (cx != null) cx.close();
-                        } catch (SQLException exception) {
-                            System.out.println(exception);
+                        } catch (SQLException ex) {
+                            ex.getStackTrace();
                         }
                     }
                 } else {
@@ -786,7 +784,7 @@ public class Swing extends JFrame {
         cx = null;
         String consulta = "SELECT * FROM Personaje ";
         try {
-            cx = getConection();
+            cx = sql.getDatabaseConnection();
             ps = cx.prepareStatement(consulta);
             rs = ps.executeQuery();
             while (rs.next()) {

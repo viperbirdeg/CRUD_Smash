@@ -1,22 +1,22 @@
 package CRUD;
 
 
+public abstract class Personaje {
+    private String nombre;
+    private String tipo;
+    private int vida;
+    private int resistencia;
+    private int alcance;
 
-public abstract class  Personaje {
-    private String nombre ;
-    private String Tipo ;
-    private int vida ;
-    private int resistencia ;
-    private int alcanze ;
+    public Personaje() {
+    }
 
-    public Personaje(){}
-
-    public Personaje (String nombre, String tipo, int vida, int resistencia, int alcanze) {
+    public Personaje(String nombre, String tipo, int vida, int resistencia, int alcance) {
         this.nombre = nombre;
-        Tipo = tipo;
+        this.tipo = tipo;
         this.vida = vida;
         this.resistencia = resistencia;
-        this.alcanze = alcanze;
+        this.alcance = alcance;
     }
 
     public String getNombre() {
@@ -28,11 +28,11 @@ public abstract class  Personaje {
     }
 
     public String getTipo() {
-        return Tipo;
+        return tipo;
     }
 
     public void setTipo(String tipo) {
-        Tipo = tipo;
+        this.tipo = tipo;
     }
 
     public int getVida() {
@@ -51,23 +51,27 @@ public abstract class  Personaje {
         this.resistencia = resistencia;
     }
 
-    public int getAlcanze() {
-        return alcanze;
+    public int getAlcance() {
+        return alcance;
     }
 
-    public void setAlcanze(int alcanze) {
-        this.alcanze = alcanze;
+    public void setAlcance(int alcance) {
+        this.alcance = alcance;
     }
 
-    public abstract String getha();
-    public abstract void setha(String nombre_hab);
-    public abstract void setha(int can_mana);
+    //Metodos abstractos
+    public abstract String getHabilidad();
+
+    public abstract void setHabilidad(String nombre_hab);
+
+    public abstract void setHabilidad(int can_mana);
+
     @Override
     public String toString() {
-        return  "nombre:" + nombre + "\n" +
-                "tipo:" + Tipo + "\n" +
-                "vida:" + vida +"\n"+
-                "resistencia:" + resistencia +"\n"+
-                "alcanze:" + alcanze ;
+        return "nombre:" + nombre + "\n" +
+                "tipo:" + tipo + "\n" +
+                "vida:" + vida + "\n" +
+                "resistencia:" + resistencia + "\n" +
+                "alcance:" + alcance;
     }
 }
