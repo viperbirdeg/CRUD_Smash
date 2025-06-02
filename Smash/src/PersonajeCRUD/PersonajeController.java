@@ -1,13 +1,8 @@
 package PersonajeCRUD;
 
-import CRUD.MysqlConnection;
-import CRUD.Personaje;
+import Extras.MysqlConnection;
 
-import javax.swing.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 
 public class PersonajeController {
@@ -18,15 +13,13 @@ public class PersonajeController {
     static PreparedStatement ps;
     static ResultSet rs;
 
-    //Method insert ("/post")
-    public boolean insertar_array(ArrayList<Personaje> personajes) throws RuntimeException {
-
+    //! (-/post) Required: characters, Response: boolean
+    public boolean insertar_array(ArrayList<Personaje> personajes) throws RuntimeException, SQLException {
         try {
             cx = sql.getDatabaseConnection();
             ps = cx.prepareStatement("INSERT INTO Personaje(P_nombre,P_tipo,P_vida,P_resistencia,P_alcanze ,P_habilidad ) VALUES (?,?,?,?,?,?)");
             int resultado = 0;
-            for (int i = 0; i < personajes.size(); i++) {
-                Personaje p = personajes.get(i);
+            for (Personaje p : personajes) {
                 ps.setString(1, p.getNombre());
                 ps.setString(2, p.getTipo());
                 ps.setInt(3, p.getVida());
@@ -35,26 +28,41 @@ public class PersonajeController {
                 ps.setString(6, p.getHabilidad());
                 resultado = ps.executeUpdate();
             }
-
-            if (resultado != 0) return false;
-            return true;
-
-            /*
-                modelo.setRowCount(0);
-                //tengo que actualizar el array list
-                personajes.removeAll(personajes);
-                System.out.println("asegurarnos de que la lista se reinicio:" + personajes.size());
-             */
-
-        } catch(Exception e) {
+            return (resultado != 0);
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         } finally {
-            try {
-                sql.closeDatabaseConnection(cx);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+            sql.closeDatabaseConnection(cx);
         }
+    }
+
+    //! (-/getAll) Required: none, Response: allCharacters
+    public ArrayList<String[]>  consultaRegistros() throws SQLException {
+        String consulta = "SELECT * FROM personaje_vw ";
+        ArrayList<String[]> registros = new ArrayList<String[]>();
+        try {
+            cx = sql.getDatabaseConnection();
+            ps = cx.prepareStatement(consulta);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                String[] registro = new String[7];
+                registro[0] = rs.getString("id");
+                registro[1] = rs.getString("nombre");
+                registro[2] = rs.getString("tipo");
+                registro[3] = rs.getString("vida");
+                registro[4] = rs.getString("resistencia");
+                registro[5] = rs.getString("alcance");
+                registro[6] = rs.getString("habilidad");
+                registros.add(registro);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (rs != null) rs.close();
+            if (ps != null) ps.close();
+            if (cx != null) cx.close();
+        }
+        return registros;
     }
 }

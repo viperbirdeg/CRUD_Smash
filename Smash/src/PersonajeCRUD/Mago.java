@@ -1,4 +1,4 @@
-package CRUD;
+package PersonajeCRUD;
 
 public class Mago extends Personaje {
     private String mana;

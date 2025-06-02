@@ -1,4 +1,4 @@
-package CRUD;
+package PersonajeCRUD;
 
 public class Combatiente extends Personaje{
     private String golpe;

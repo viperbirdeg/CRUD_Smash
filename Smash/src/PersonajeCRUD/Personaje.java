@@ -1,4 +1,4 @@
-package CRUD;
+package PersonajeCRUD;
 
 
 public abstract class Personaje {

@@ -1,5 +1,8 @@
 package CRUD;
 
+import Extras.MysqlConnection;
+import PersonajeCRUD.*;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -34,8 +37,10 @@ public class Swing extends JFrame {
     Connection cx;
     static PreparedStatement ps;
     static ResultSet rs;
+    PersonajeController psCtrl = new PersonajeController();
 
     //Frame principal
+    //todo: refactorizar
     public Swing() {
         this.setTitle("CRUD-Smash");
         this.setSize(700, 500);
@@ -47,6 +52,7 @@ public class Swing extends JFrame {
     }
 
     //Metodo para Panel principal
+    //todo: eliminar
     public void J_panel_m() {
         panel = new JPanel();
         this.getContentPane().add(panel);
@@ -58,6 +64,7 @@ public class Swing extends JFrame {
     }
 
     //Labels del panel principal
+    //todo: eliminar
     public void J_label() {
         JLabel nombre = new JLabel("Ingresa el nombre:");
         nombre.setBounds(150, 43, 300, 100);
@@ -66,6 +73,7 @@ public class Swing extends JFrame {
         JLabel vida = new JLabel("Cantidad de vida 1-100:");
         vida.setBounds(130, 100, 300, 100);
         panel.add(vida);
+
 
         JLabel tipo = new JLabel("Selecciona el tipo :");
         tipo.setBounds(155, 153, 300, 100);
@@ -359,7 +367,11 @@ public class Swing extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!personajes.isEmpty()) {
-                    insertar_array();
+                    try {
+                        insertar_array();
+                    } catch (SQLException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 } else {
                     JOptionPane.showMessageDialog(null, "No hay registros preliminares");
                 }
@@ -418,44 +430,21 @@ public class Swing extends JFrame {
         });
     }
 
-    public void insertar_array() {
-        //tenemos que declarar el objeto conexion como null
-        Connection cx = null;
+    //! PRE REVISIÓN
+    public void insertar_array() throws SQLException {
+        /*!Revisado*/
+        boolean response = psCtrl.insertar_array(personajes);
 
-        try {
-            cx = sql.getDatabaseConnection();
-            ps = cx.prepareStatement("INSERT INTO Personaje(P_nombre,P_tipo,P_vida,P_resistencia,P_alcanze ,P_habilidad ) VALUES (?,?,?,?,?,?)");
-            int resultado = 0;
-            for (int i = 0; i < personajes.size(); i++) {
-                Personaje p = personajes.get(i);
-                ps.setString(1, p.getNombre());
-                ps.setString(2, p.getTipo());
-                ps.setInt(3, p.getVida());
-                ps.setInt(4, p.getResistencia());
-                ps.setInt(5, p.getAlcance());
-                ps.setString(6, p.getHabilidad());
-                resultado = ps.executeUpdate();
-            }
-            if (resultado > 0) {
-                JOptionPane.showMessageDialog(null, "Insercion de nuevos registros exitosos");
-                //tengo que reiniciar el Jtable
-                modelo.setRowCount(0);
-                //tengo que actualizar el array list
-                personajes.removeAll(personajes);
-                System.out.println("asegurarnos de que la lista se reinicio:" + personajes.size());
+        if (!response) {
+            JOptionPane.showMessageDialog(null, "Inserción de nuevos registros exitosos");
+            //tengo que reiniciar el Jtable
+            modelo.setRowCount(0);
+            //tengo que actualizar el array list
+            personajes.removeAll(personajes);
+            System.out.println("asegurarnos de que la lista se reinicio:" + personajes.size());
 
-            } else {
-                JOptionPane.showMessageDialog(null, "No se inserto correctamente");
-            }
-
-        } catch (Exception e) {
-            System.err.println("Error:" + e);
-        } finally {
-            try {
-                sql.closeDatabaseConnection(cx);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+        } else {
+            JOptionPane.showMessageDialog(null, "No se inserto correctamente");
         }
     }
 
@@ -779,51 +768,17 @@ public class Swing extends JFrame {
 
     }
 
+    //! PRE REVISIÓN
     public void listado_general() {
-        String[] registros = new String[7];
-        cx = null;
-        String consulta = "SELECT * FROM Personaje ";
         try {
-            cx = sql.getDatabaseConnection();
-            ps = cx.prepareStatement(consulta);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-
-                /*CREATE TABLE Personaje(
-                        P_id INT  PRIMARY KEY AUTO_INCREMENT,
-                        P_nombre VARCHAR(15) NOT NULL ,
-                        P_tipo VARCHAR(15) NOT NULL ,
-                        P_vida INT  NOT NULL,
-                        P_resistencia INT NOT NULL ,
-                        P_alcanze INT NOT NULL,
-                        P_habilidad VARCHAR(15) NOT NULL
-                );*/
-                registros[0] = rs.getString("P_id");
-                registros[1] = rs.getString("P_nombre");
-                registros[2] = rs.getString("P_tipo");
-                registros[3] = rs.getString("P_vida");
-                registros[4] = rs.getString("P_resistencia");
-                registros[5] = rs.getString("P_alcanze");
-                registros[6] = rs.getString("P_Habilidad");
-                modelo.addRow(registros);
+            ArrayList<String[]> registros = psCtrl.consultaRegistros();
+            for (String[] registro : registros) {
+                modelo.addRow(registro);
             }
-        } catch (Exception exception) {
-            System.err.println(exception);
-            System.out.println("error en pasar datos tonto ");
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (ps != null) ps.close();
-                if (cx != null) cx.close();
-            } catch (SQLException e) {
-                System.out.println(e);
-            }
+        } catch (Exception e) {
+            JOptionPane.showInputDialog(null, "Se borro la base de datos");
+            e.printStackTrace();
         }
     }
 
-    //buscar elemento del listado general
-    public static void main(String[] args) {
-        new Swing();
-
-    }
 }
