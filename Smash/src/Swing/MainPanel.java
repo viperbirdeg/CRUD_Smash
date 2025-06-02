@@ -147,6 +147,9 @@ public class MainPanel extends JPanel implements SharedDataModel.DataChangeListe
             case 3:
                 dataModel.setData(new Mixto(nombre, tipo, vida, resistencia, alcance, preliminar));
         }
+        for (Personaje p : personajes) {
+            p.toString();
+        }
         JOptionPane.showMessageDialog(null, "Nombre:" + nombre + "\n" + "Vida:" + vida + "\n" + "Tipo:" + tipo + "\n" + "Resistencia:" + resistencia + "\n" + "Alcanze:" + alcance);
     }
 
@@ -160,8 +163,6 @@ public class MainPanel extends JPanel implements SharedDataModel.DataChangeListe
 
     @Override
     public void onDataChanged() {
-        // Actualizar la UI cuando cambian los datos
         personajes = dataModel.getData();
-        // ... actualizar componentes según los nuevos dato
     }
 }

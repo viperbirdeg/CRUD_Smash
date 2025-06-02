@@ -28,6 +28,7 @@ public class MainFrame extends JFrame {
     }
 
     public void addPanelListeners() {
+        dataModel = new SharedDataModel();
         //*CardLayout
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
